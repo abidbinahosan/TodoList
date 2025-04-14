@@ -17,9 +17,14 @@ namespace TodoList.Controllers
 
         // GET: Todo
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
-            var items = await _todoService.GetAllAsync();
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentPage = page;
+
+            var (items, totalCount) = await _todoService.GetAllAsync(page, pageSize);
+            ViewBag.TotalCount = totalCount;
+
             return View(items);
         }
 
@@ -110,9 +115,27 @@ namespace TodoList.Controllers
 
         // GET: Todo/Search
         [HttpGet]
-        public async Task<IActionResult> Search(string searchTerm, bool? isCompleted, string priority)
+        public async Task<IActionResult> Search(
+        string searchTerm,
+        bool? isCompleted,
+        string priority,
+        int page = 1,
+        int pageSize = 10)
         {
-            var items = await _todoService.SearchAsync(searchTerm, isCompleted, priority);
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentPage = page;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.IsCompleted = isCompleted;
+            ViewBag.Priority = priority;
+
+            var (items, totalCount) = await _todoService.SearchAsync(
+                searchTerm,
+                isCompleted,
+                priority,
+                page,
+                pageSize);
+
+            ViewBag.TotalCount = totalCount;
             return View("Index", items);
         }
     }

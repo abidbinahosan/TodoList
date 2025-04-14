@@ -4,6 +4,25 @@
 }
 
 <h1>Todo List</h1>
+<!-- ADD THIS PAGE SIZE DROPDOWN -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <form asp-action="Index" method="get" class="form-inline">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+            <div class="input-group">
+                <label class="input-group-text" for="pageSize">Items per page:</label>
+                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                    <option value="10" selected="@(ViewBag.PageSize == 10)">10</option>
+                    <option value="25" selected="@(ViewBag.PageSize == 25)">25</option>
+                    <option value="50" selected="@(ViewBag.PageSize == 50)">50</option>
+                    <option value="100" selected="@(ViewBag.PageSize == 100)">100</option>
+                </select>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
 
 <!-- Search Form -->
 <form asp-action="Search" method="get" class="mb-4">
@@ -100,3 +119,49 @@
 </table>
 
 <!-- Pagination would go here if you implement it later -->
+@{
+    var totalPages = (int)Math.Ceiling((double)ViewBag.TotalCount / ViewBag.PageSize);
+}
+
+@if (totalPages > 1)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            @if (ViewBag.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                       asp-route-pageSize="@ViewBag.PageSize">
+                        &laquo; Previous
+                    </a>
+                </li>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@i"
+                       asp-route-pageSize="@ViewBag.PageSize">
+                        @i
+                    </a>
+                </li>
+            }
+
+            @if (ViewBag.CurrentPage < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                       asp-route-pageSize="@ViewBag.PageSize">
+                        Next &raquo;
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

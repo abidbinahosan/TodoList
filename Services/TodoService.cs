@@ -21,14 +21,19 @@ namespace TodoList.Services
             return await _context.TodoItems.FindAsync(id);
         }
 
-        public async Task<List<TodoItem>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<(List<TodoItem> items, int totalCount)> GetAllAsync(int pageNumber = 1, int pageSize = 10)
         {
-            return await _context.TodoItems
+            var query = _context.TodoItems.AsQueryable();
+
+            var totalCount = await query.CountAsync();
+            var items = await query
                 .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .AsNoTracking()
                 .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task<int> GetTotalCountAsync()
@@ -58,7 +63,12 @@ namespace TodoList.Services
             }
         }
 
-        public async Task<List<TodoItem>> SearchAsync(string searchTerm, bool? isCompleted, string priority)
+        public async Task<(List<TodoItem> items, int totalCount)> SearchAsync(
+         string searchTerm,
+         bool? isCompleted,
+         string priority,
+         int pageNumber = 1,
+         int pageSize = 10)
         {
             IQueryable<TodoItem> query = _context.TodoItems;
 
@@ -78,10 +88,15 @@ namespace TodoList.Services
                 query = query.Where(t => t.Priority == priority);
             }
 
-            return await query
+            var totalCount = await query.CountAsync();
+            var items = await query
                 .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .AsNoTracking()
                 .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }
