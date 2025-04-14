@@ -4,6 +4,7 @@ using TodoList.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using TodoList.Services;
 
 namespace TodoList.Services
 {
@@ -26,14 +27,16 @@ namespace TodoList.Services
             var query = _context.TodoItems.AsQueryable();
 
             var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+            var allItems = await query
                 .AsNoTracking()
                 .ToListAsync();
 
-            return (items, totalCount);
+            var sortedItems = NaturalSortHelper.SortByNaturalOrder(allItems)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (sortedItems, totalCount);
         }
 
         public async Task<int> GetTotalCountAsync()
@@ -64,18 +67,18 @@ namespace TodoList.Services
         }
 
         public async Task<(List<TodoItem> items, int totalCount)> SearchAsync(
-         string searchTerm,
-         bool? isCompleted,
-         string priority,
-         int pageNumber = 1,
-         int pageSize = 10)
+        string searchTerm,
+        bool? isCompleted,
+        string priority,
+        int pageNumber = 1,
+        int pageSize = 10)
         {
             IQueryable<TodoItem> query = _context.TodoItems;
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(t => t.Title.Contains(searchTerm) ||
-                    (t.Description != null && t.Description.Contains(searchTerm)));
+                                      (t.Description != null && t.Description.Contains(searchTerm)));
             }
 
             if (isCompleted.HasValue)
@@ -89,14 +92,16 @@ namespace TodoList.Services
             }
 
             var totalCount = await query.CountAsync();
-            var items = await query
-                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+            var allItems = await query
                 .AsNoTracking()
                 .ToListAsync();
 
-            return (items, totalCount);
+            var sortedItems = NaturalSortHelper.SortByNaturalOrder(allItems)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (sortedItems, totalCount);
         }
     }
 }
