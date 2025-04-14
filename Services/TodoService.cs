@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoList.Data;
 using TodoList.Models;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace TodoList.Services
 {
@@ -16,67 +16,72 @@ namespace TodoList.Services
             _context = context;
         }
 
-        public Task AddAsync(TodoItem item)
+        public async Task<TodoItem> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            return await _context.TodoItems.FindAsync(id);
         }
 
-        public Task DeleteAsync(int id)
+        public async Task<List<TodoItem>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
         {
-            throw new NotImplementedException();
+            return await _context.TodoItems
+                .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public Task<List<TodoItem>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<int> GetTotalCountAsync()
         {
-            throw new NotImplementedException();
+            return await _context.TodoItems.CountAsync();
         }
 
-        public Task<TodoItem> GetByIdAsync(int id)
+        public async Task AddAsync(TodoItem item)
         {
-            throw new NotImplementedException();
+            _context.TodoItems.Add(item);
+            await _context.SaveChangesAsync();
         }
 
-        public Task<int> GetTotalCountAsync()
+        public async Task UpdateAsync(TodoItem item)
         {
-            throw new NotImplementedException();
+            _context.TodoItems.Update(item);
+            await _context.SaveChangesAsync();
         }
 
-        // ... (keep other existing methods unchanged) ...
+        public async Task DeleteAsync(int id)
+        {
+            var item = await GetByIdAsync(id);
+            if (item != null)
+            {
+                _context.TodoItems.Remove(item);
+                await _context.SaveChangesAsync();
+            }
+        }
 
         public async Task<List<TodoItem>> SearchAsync(string searchTerm, bool? isCompleted, string priority)
         {
-            IQueryable<TodoItem> query = _context.TodoItems.AsQueryable();
+            IQueryable<TodoItem> query = _context.TodoItems;
 
-            // Apply search term filter
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(t => t.Title.Contains(searchTerm) ||
                     (t.Description != null && t.Description.Contains(searchTerm)));
             }
 
-            // Apply completion filter
             if (isCompleted.HasValue)
             {
                 query = query.Where(t => t.IsCompleted == isCompleted.Value);
             }
 
-            // Apply priority filter (safe null handling)
             if (!string.IsNullOrEmpty(priority))
             {
                 query = query.Where(t => t.Priority == priority);
             }
 
-            // Safe sorting with null handling
             return await query
                 .OrderBy(t => t.DueDate ?? DateTime.MaxValue)
-                .ThenBy(t => t.Priority ?? "ZZZ")  // Puts null priorities last
                 .AsNoTracking()
                 .ToListAsync();
-        }
-
-        public Task UpdateAsync(TodoItem item)
-        {
-            throw new NotImplementedException();
         }
     }
 }
