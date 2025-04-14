@@ -33,25 +33,6 @@ namespace TodoList.Controllers
             return View(items);
         }
 
-        // GET: Todo/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Todo/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TodoItem item)
-        {
-            if (ModelState.IsValid)
-            {
-                await _todoService.AddAsync(item);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(item);
-        }
-
         // GET: Todo/Edit/5
         public async Task<IActionResult> Edit(int id)
         {

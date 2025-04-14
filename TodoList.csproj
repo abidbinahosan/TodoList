@@ -65,6 +65,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Views\Home\Create.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Views\Home\Index.cshtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
