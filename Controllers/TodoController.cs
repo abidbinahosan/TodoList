@@ -19,11 +19,16 @@ namespace TodoList.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
+            // Add validation
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 10, 100); // Limit between 10-100
+
             ViewBag.PageSize = pageSize;
             ViewBag.CurrentPage = page;
 
             var (items, totalCount) = await _todoService.GetAllAsync(page, pageSize);
             ViewBag.TotalCount = totalCount;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             return View(items);
         }
@@ -116,12 +121,15 @@ namespace TodoList.Controllers
         // GET: Todo/Search
         [HttpGet]
         public async Task<IActionResult> Search(
-        string searchTerm,
-        bool? isCompleted,
-        string priority,
-        int page = 1,
-        int pageSize = 10)
+    string searchTerm,
+    bool? isCompleted,
+    string priority,
+    int page = 1,
+    int pageSize = 10)
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 10, 100);
+
             ViewBag.PageSize = pageSize;
             ViewBag.CurrentPage = page;
             ViewBag.SearchTerm = searchTerm;
@@ -136,6 +144,8 @@ namespace TodoList.Controllers
                 pageSize);
 
             ViewBag.TotalCount = totalCount;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
             return View("Index", items);
         }
     }

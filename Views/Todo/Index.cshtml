@@ -7,19 +7,21 @@
 <!-- ADD THIS PAGE SIZE DROPDOWN -->
 <div class="row mb-3">
     <div class="col-md-3">
-        <form asp-action="Index" method="get" class="form-inline">
-            <input type="hidden" name="page" value="1" />
-            <input type="hidden" name="pageSize" value="@ViewBag.PageSize" />
+        <form asp-action="Index" method="get" id="pageSizeForm">
             <div class="input-group">
                 <label class="input-group-text" for="pageSize">Items per page:</label>
-                <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                <select name="pageSize" class="form-select"
+                        onchange="document.getElementById('pageSizeForm').submit()">
                     <option value="10" selected="@(ViewBag.PageSize == 10)">10</option>
                     <option value="25" selected="@(ViewBag.PageSize == 25)">25</option>
                     <option value="50" selected="@(ViewBag.PageSize == 50)">50</option>
                     <option value="100" selected="@(ViewBag.PageSize == 100)">100</option>
                 </select>
+                <!-- Keep current search filters -->
+                <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
+                <input type="hidden" name="isCompleted" value="@ViewBag.IsCompleted" />
+                <input type="hidden" name="priority" value="@ViewBag.Priority" />
             </div>
-            <input type="hidden" name="page" value="1" />
         </form>
     </div>
 </div>
@@ -120,48 +122,81 @@
 
 <!-- Pagination would go here if you implement it later -->
 @{
-    var totalPages = (int)Math.Ceiling((double)ViewBag.TotalCount / ViewBag.PageSize);
+    var totalPages = ViewBag.TotalPages;
+    var currentPage = ViewBag.CurrentPage;
+    var pageSize = ViewBag.PageSize;
+    var maxVisiblePages = 10; // Show max 10 page buttons at a time
+    var halfVisible = maxVisiblePages / 2;
+
+    var startPage = Math.Max(1, currentPage - halfVisible);
+    var endPage = Math.Min(totalPages, startPage + maxVisiblePages - 1);
+
+    // Adjust if we're at the end
+    if (endPage - startPage + 1 < maxVisiblePages)
+    {
+        startPage = Math.Max(1, endPage - maxVisiblePages + 1);
+    }
 }
 
 @if (totalPages > 1)
 {
     <nav aria-label="Page navigation">
         <ul class="pagination">
-            @if (ViewBag.CurrentPage > 1)
+            @if (currentPage > 1)
             {
                 <li class="page-item">
                     <a class="page-link"
                        asp-action="Index"
-                       asp-route-page="@(ViewBag.CurrentPage - 1)"
-                       asp-route-pageSize="@ViewBag.PageSize">
-                        &laquo; Previous
+                       asp-route-page="1"
+                       asp-route-pageSize="@pageSize">
+                        &laquo; First
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@(currentPage - 1)"
+                       asp-route-pageSize="@pageSize">
+                        Previous
                     </a>
                 </li>
             }
 
-            @for (int i = 1; i <= totalPages; i++)
+            @for (int i = startPage; i <= endPage; i++)
             {
-                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <li class="page-item @(i == currentPage ? "active" : "")">
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-page="@i"
-                       asp-route-pageSize="@ViewBag.PageSize">
+                       asp-route-pageSize="@pageSize">
                         @i
                     </a>
                 </li>
             }
 
-            @if (ViewBag.CurrentPage < totalPages)
+            @if (currentPage < totalPages)
             {
                 <li class="page-item">
                     <a class="page-link"
                        asp-action="Index"
-                       asp-route-page="@(ViewBag.CurrentPage + 1)"
-                       asp-route-pageSize="@ViewBag.PageSize">
-                        Next &raquo;
+                       asp-route-page="@(currentPage + 1)"
+                       asp-route-pageSize="@pageSize">
+                        Next
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-page="@totalPages"
+                       asp-route-pageSize="@pageSize">
+                        Last &raquo;
                     </a>
                 </li>
             }
         </ul>
     </nav>
+
+    <div class="text-muted mt-2">
+        Showing @((currentPage - 1) * pageSize + 1)-@Math.Min(currentPage * pageSize, ViewBag.TotalCount) of @ViewBag.TotalCount items
+    </div>
 }
