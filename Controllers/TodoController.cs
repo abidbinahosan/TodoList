@@ -97,11 +97,14 @@ namespace TodoList.Controllers
         public async Task<IActionResult> ToggleComplete(int id)
         {
             var item = await _todoService.GetByIdAsync(id);
-            if (item != null)
+            if (item == null)
             {
-                item.IsCompleted = !item.IsCompleted;
-                await _todoService.UpdateAsync(item);
+                return NotFound();
             }
+
+            item.IsCompleted = !item.IsCompleted;
+            await _todoService.UpdateAsync(item);
+
             return RedirectToAction(nameof(Index));
         }
 

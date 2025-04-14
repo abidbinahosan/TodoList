@@ -44,7 +44,7 @@ namespace TodoList.Services
 
         public async Task UpdateAsync(TodoItem item)
         {
-            _context.TodoItems.Update(item);
+            _context.Entry(item).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 

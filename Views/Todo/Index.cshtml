@@ -86,10 +86,13 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                    <a asp-action="ToggleComplete" asp-route-id="@item.Id"
-                       class="btn btn-sm @(item.IsCompleted ? "btn-outline-warning" : "btn-outline-success")">
-                        @(item.IsCompleted ? "Mark Pending" : "Mark Complete")
-                    </a>
+                    <form asp-action="ToggleComplete" method="post" style="display: inline;">
+                        <input type="hidden" name="id" value="@item.Id" />
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm @(item.IsCompleted ? "btn-outline-warning" : "btn-outline-success")">
+                            @(item.IsCompleted ? "Mark Pending" : "Mark Complete")
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
