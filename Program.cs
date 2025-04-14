@@ -39,7 +39,7 @@ app.UseAuthorization();
 // Map controller routes
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Todo}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapFallbackToController("Index", "Todo");
 
